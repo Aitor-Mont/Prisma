@@ -1,0 +1,120 @@
+<div class="landing-container">
+  <div class="overlay"></div>
+
+  <div class="auth-card glass">
+    <!-- Left Side: Branding/Info -->
+    <div class="branding-side">
+      <div class="branding-content">
+        <img src="/assets/images/Prisma logo.png" alt="Prisma Logo" class="brand-logo">
+        <p class="subtitle">Financial Analytics Dashboard</p>
+        <p class="description">
+          Unlock the power of your data with <strong>real-time</strong> analytics and comprehensive reporting.
+        </p>
+      </div>
+      <div class="branding-footer">
+        <span>&copy; 2026 Prisma Inc.</span>
+      </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="form-side">
+      <!-- Login/Register Form -->
+      <div *ngIf="!showForgotPassword()">
+        <div class="form-header">
+          <h2>{{ isLogin() ? 'Welcome Back' : 'Create Account' }}</h2>
+          <p>{{ isLogin() ? 'Please sign in to continue' : 'Get started with your free account' }}</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()">
+          <div class="input-group">
+            <label for="email">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="name@company.com"
+                autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="password">Password</label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••"
+                autocomplete="current-password" required>
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage()" class="error-message">
+            {{ errorMessage() }}
+          </div>
+
+          <div *ngIf="successMessage()" class="success-message">
+            {{ successMessage() }}
+          </div>
+
+          <div class="form-actions">
+            <a href="javascript:void(0)" class="forgot-pass" *ngIf="isLogin()" (click)="showForgotPassword.set(true)">Forgot Password?</a>
+          </div>
+
+          <button type="submit" [disabled]="isLoading()" class="submit-btn" [class.loading]="isLoading()">
+            <span *ngIf="!isLoading()">{{ isLogin() ? 'Sign In' : 'Sign Up' }}</span>
+            <span *ngIf="isLoading()" class="loader"></span>
+          </button>
+
+          <div class="toggle-text">
+            <p>
+              {{ isLogin() ? "New to Prisma?" : "Already have an account?" }}
+              <a href="javascript:void(0)" (click)="toggleMode()">
+                {{ isLogin() ? 'Create an account' : 'Sign in' }}
+              </a>
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- Forgot Password Form -->
+      <div *ngIf="showForgotPassword()">
+        <div class="form-header">
+          <h2>Reset Password</h2>
+          <p>Enter your email to receive password reset instructions</p>
+        </div>
+
+        <form (ngSubmit)="onForgotPassword()">
+          <div class="input-group">
+            <label for="forgot-email">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="forgot-email" [(ngModel)]="forgotEmail" name="forgot-email" 
+                placeholder="name@company.com" autocomplete="email" required>
+            </div>
+            <div *ngIf="emailError()" class="field-error">
+              {{ emailError() }}
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage()" class="error-message">
+            {{ errorMessage() }}
+          </div>
+
+          <div *ngIf="successMessage()" class="success-message">
+            {{ successMessage() }}
+          </div>
+
+          <button type="submit" [disabled]="isLoading()" class="submit-btn" [class.loading]="isLoading()">
+            <span *ngIf="!isLoading()">Send Reset Link</span>
+            <span *ngIf="isLoading()" class="loader"></span>
+          </button>
+
+          <div class="toggle-text">
+            <p>
+              Remember your password? 
+              <a href="javascript:void(0)" (click)="cancelForgotPassword()">
+                Back to Sign In
+              </a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

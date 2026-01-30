@@ -1,0 +1,130 @@
+<app-header title="Dashboard"></app-header>
+
+<div class="dashboard-content">
+  <!-- Live Data Indicator -->
+  @if (isLiveData()) {
+  <div class="live-indicator">
+    <span class="live-dot"></span>
+    <span>Live Data</span>
+  </div>
+  }
+
+  <!-- Main Grid Layout -->
+  <div class="dashboard-grid">
+
+    <!-- Real Time D3 Chart -->
+    <div class="chart-card realtime-chart glass-card">
+      <app-real-time-chart></app-real-time-chart>
+    </div>
+
+    <!-- Revenue Growth Chart -->
+    <div class="chart-card revenue-chart glass-card">
+      <div class="chart-header">
+        <h3 class="chart-title">Revenue Growth</h3>
+        <div class="chart-controls">
+          <select class="chart-select">
+            <option>Month</option>
+            <option>Week</option>
+            <option>Year</option>
+          </select>
+          <select class="chart-select">
+            <option>Radio Team</option>
+            <option>All Teams</option>
+          </select>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- User Acquisition Chart -->
+    <div class="chart-card acquisition-chart glass-card">
+      <div class="chart-header">
+        <h3 class="chart-title">User Acquisition</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="acquisitionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- KPI Metrics -->
+    <div class="metrics-column">
+      <app-metric-card title="Total Sales" [value]="'$1,225.00'" [change]="3.3" icon="💰"
+        color="cyan"></app-metric-card>
+
+      <app-metric-card title="New Customers" [value]="446" [change]="3.5" icon="👥" color="purple"></app-metric-card>
+
+      <app-metric-card title="Active Sessions" [value]="1297" [change]="3.8" icon="📊" color="green"></app-metric-card>
+    </div>
+
+    <!-- Global Activity Heatmap -->
+    <div class="activity-card glass-card">
+      <h3 class="card-title">Global Activity</h3>
+      <div class="activity-labels">
+        <span class="activity-label">High</span>
+        <span class="activity-label">High</span>
+      </div>
+      <div class="activity-grid">
+        @for (row of [0, 1, 2, 3, 4, 5, 6]; track row) {
+        <div class="activity-row">
+          @for (col of [0, 1, 2, 3, 4, 5, 6]; track col) {
+          <div class="activity-cell"
+            [style.backgroundColor]="getActivityColor(globalActivity()[row * 7 + col]?.value || 0.5)"></div>
+          }
+        </div>
+        }
+      </div>
+      <div class="activity-legend">
+        <span class="legend-text">Low</span>
+        <div class="legend-gradient"></div>
+        <span class="legend-text">High</span>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="transactions-card glass-card">
+      <div class="transactions-header">
+        <h3 class="card-title">Recent Transactions</h3>
+        <select class="chart-select">
+          <option>All recents</option>
+          <option>Today</option>
+          <option>This Week</option>
+        </select>
+      </div>
+
+      <div class="transactions-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction</th>
+              <th>Status</th>
+              <th>Last Sent</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of transactions(); track tx.id) {
+            <tr>
+              <td>
+                <div class="tx-info">
+                  <span class="tx-icon">{{ tx.type === 'income' ? '🟢' : tx.type === 'expense' ? '🔴' : '🔵' }}</span>
+                  <span class="tx-name">{{ tx.name }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class]="getStatusClass(tx.status)">
+                  {{ getStatusLabel(tx.status) }}
+                </span>
+              </td>
+              <td class="tx-date">{{ tx.date }}</td>
+              <td class="tx-amount">${{ tx.amount | number:'1.2-2' }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
