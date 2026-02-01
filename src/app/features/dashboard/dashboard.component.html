@@ -1,6 +1,9 @@
 <app-header title="Dashboard"></app-header>
 
 <div class="dashboard-content">
+  <!-- Stock Ticker -->
+  <app-stock-ticker></app-stock-ticker>
+
   <!-- Live Data Indicator -->
   @if (isLiveData()) {
   <div class="live-indicator">
@@ -9,6 +12,11 @@
   </div>
   }
 
+  <!-- Market Overview Section -->
+  <div class="market-section glass-card">
+    <app-market-overview></app-market-overview>
+  </div>
+
   <!-- Main Grid Layout -->
   <div class="dashboard-grid">
 
@@ -16,6 +24,7 @@
     <div class="chart-card realtime-chart glass-card">
       <app-real-time-chart></app-real-time-chart>
     </div>
+
 
     <!-- Revenue Growth Chart -->
     <div class="chart-card revenue-chart glass-card">

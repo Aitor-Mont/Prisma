@@ -26,6 +26,12 @@
     animation: pulse 1.5s infinite;
 }
 
+/* Market Section */
+.market-section {
+    padding: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
