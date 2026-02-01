@@ -1,15 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../shared/components/header/header.component';
+import { UserSettingsService, UserSettings } from '../../services/user-settings.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
-    selector: 'app-settings',
-    standalone: true,
-    imports: [CommonModule, HeaderComponent],
-    template: `
+  selector: 'app-settings',
+  standalone: true,
+  imports: [CommonModule, HeaderComponent, FormsModule],
+  template: `
     <app-header title="Settings"></app-header>
     
     <div class="settings-content">
+      <!-- Save Indicator -->
+      <div class="save-indicator" *ngIf="settingsService.isSaved()">
+        <span class="save-icon">✓</span> Settings saved
+      </div>
+
       <div class="settings-grid">
         <!-- Profile Settings -->
         <div class="settings-section glass-card">
@@ -17,20 +25,32 @@ import { HeaderComponent } from '../../shared/components/header/header.component
           
           <div class="setting-group">
             <label class="setting-label">Display Name</label>
-            <input type="text" class="setting-input" value="John Doe" />
+            <input type="text" class="setting-input" 
+                   [(ngModel)]="displayName" 
+                   (blur)="saveField('displayName', displayName)"
+                   placeholder="Enter your name" />
           </div>
           
           <div class="setting-group">
             <label class="setting-label">Email</label>
-            <input type="email" class="setting-input" value="john.doe@example.com" />
+            <input type="email" class="setting-input" 
+                   [value]="settings().email" 
+                   readonly
+                   title="Email cannot be changed here" />
+            <span class="setting-hint">Email is managed through your account</span>
           </div>
           
           <div class="setting-group">
             <label class="setting-label">Timezone</label>
-            <select class="setting-input">
+            <select class="setting-input" 
+                    [(ngModel)]="timezone"
+                    (change)="saveField('timezone', timezone)">
               <option>UTC (GMT+0)</option>
-              <option selected>Europe/Madrid (GMT+1)</option>
+              <option>Europe/Madrid (GMT+1)</option>
+              <option>Europe/London (GMT+0)</option>
               <option>America/New_York (GMT-5)</option>
+              <option>America/Los_Angeles (GMT-8)</option>
+              <option>Asia/Tokyo (GMT+9)</option>
             </select>
           </div>
         </div>
@@ -45,7 +65,9 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               <span class="setting-description">Enable dark theme</span>
             </div>
             <label class="toggle">
-              <input type="checkbox" checked />
+              <input type="checkbox" 
+                     [(ngModel)]="darkMode"
+                     (change)="saveField('darkMode', darkMode)" />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -56,7 +78,9 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               <span class="setting-description">Auto-refresh market data</span>
             </div>
             <label class="toggle">
-              <input type="checkbox" checked />
+              <input type="checkbox" 
+                     [(ngModel)]="realTimeUpdates"
+                     (change)="saveField('realTimeUpdates', realTimeUpdates)" />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -67,7 +91,9 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               <span class="setting-description">Receive daily summary emails</span>
             </div>
             <label class="toggle">
-              <input type="checkbox" />
+              <input type="checkbox" 
+                     [(ngModel)]="emailNotifications"
+                     (change)="saveField('emailNotifications', emailNotifications)" />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -83,7 +109,10 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               Alpha Vantage API Key
               <a href="https://www.alphavantage.co/support/#api-key" target="_blank" class="setting-link">Get free key →</a>
             </label>
-            <input type="password" class="setting-input" placeholder="Enter your API key" />
+            <input type="password" class="setting-input" 
+                   [(ngModel)]="alphaVantageApiKey"
+                   (blur)="saveField('alphaVantageApiKey', alphaVantageApiKey)"
+                   placeholder="Enter your API key" />
           </div>
           
           <div class="setting-group">
@@ -91,12 +120,28 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               Finnhub API Key
               <a href="https://finnhub.io/register" target="_blank" class="setting-link">Get free key →</a>
             </label>
-            <input type="password" class="setting-input" placeholder="Enter your API key" />
+            <input type="password" class="setting-input" 
+                   [(ngModel)]="finnhubApiKey"
+                   (blur)="saveField('finnhubApiKey', finnhubApiKey)"
+                   placeholder="Enter your API key" />
           </div>
           
           <div class="api-status">
             <span class="status-dot connected"></span>
             <span>CoinGecko API: Connected (No key required)</span>
+          </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="settings-section glass-card">
+          <h3 class="section-title">Account</h3>
+          
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-name">Sign Out</span>
+              <span class="setting-description">Sign out of your account</span>
+            </div>
+            <button class="btn btn-secondary" (click)="signOut()">Sign Out</button>
           </div>
         </div>
 
@@ -109,16 +154,43 @@ import { HeaderComponent } from '../../shared/components/header/header.component
               <span class="setting-name">Clear Local Data</span>
               <span class="setting-description">Remove all cached data and preferences</span>
             </div>
-            <button class="btn btn-danger">Clear Data</button>
+            <button class="btn btn-danger" (click)="clearData()">Clear Data</button>
           </div>
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .settings-content {
       padding: var(--space-xl);
       max-width: 800px;
+      position: relative;
+    }
+
+    .save-indicator {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      background: rgba(16, 185, 129, 0.9);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+      z-index: 100;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .save-icon {
+      font-size: 16px;
     }
 
     .settings-grid {
@@ -167,6 +239,13 @@ import { HeaderComponent } from '../../shared/components/header/header.component
       color: var(--color-primary);
     }
 
+    .setting-hint {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      margin-top: var(--space-xs);
+      display: block;
+    }
+
     .setting-input {
       width: 100%;
       padding: var(--space-md);
@@ -181,6 +260,11 @@ import { HeaderComponent } from '../../shared/components/header/header.component
       outline: none;
       border-color: var(--color-primary);
       box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    }
+
+    .setting-input[readonly] {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
     .setting-row {
@@ -284,15 +368,32 @@ import { HeaderComponent } from '../../shared/components/header/header.component
       animation: pulse 1.5s infinite;
     }
 
-    /* Danger Button */
+    /* Buttons */
+    .btn {
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-primary);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
     .btn-danger {
       background: transparent;
       border: 1px solid var(--color-error);
       color: var(--color-error);
-      padding: var(--space-sm) var(--space-lg);
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
     }
 
     .btn-danger:hover {
@@ -305,4 +406,48 @@ import { HeaderComponent } from '../../shared/components/header/header.component
     }
   `]
 })
-export class SettingsComponent { }
+export class SettingsComponent implements OnInit {
+  settingsService = inject(UserSettingsService);
+  authService = inject(AuthService);
+
+  settings = this.settingsService.settings;
+
+  // Form fields
+  displayName = '';
+  timezone = '';
+  darkMode = true;
+  realTimeUpdates = true;
+  emailNotifications = false;
+  alphaVantageApiKey = '';
+  finnhubApiKey = '';
+
+  ngOnInit(): void {
+    this.loadFormValues();
+  }
+
+  private loadFormValues(): void {
+    const s = this.settings();
+    this.displayName = s.displayName;
+    this.timezone = s.timezone;
+    this.darkMode = s.darkMode;
+    this.realTimeUpdates = s.realTimeUpdates;
+    this.emailNotifications = s.emailNotifications;
+    this.alphaVantageApiKey = s.alphaVantageApiKey;
+    this.finnhubApiKey = s.finnhubApiKey;
+  }
+
+  saveField<K extends keyof UserSettings>(key: K, value: UserSettings[K]): void {
+    this.settingsService.updateSetting(key, value);
+  }
+
+  async signOut(): Promise<void> {
+    await this.authService.signOut();
+  }
+
+  clearData(): void {
+    if (confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
+      this.settingsService.clearSettings();
+      this.loadFormValues();
+    }
+  }
+}

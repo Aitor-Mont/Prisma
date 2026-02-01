@@ -18,8 +18,45 @@
 
     <!-- Right Side: Form -->
     <div class="form-side">
+      <!-- Verification Pending State -->
+      <div *ngIf="showVerificationPending()">
+        <div class="form-header">
+          <div class="verification-icon">📧</div>
+          <h2>Check Your Email</h2>
+          <p>We've sent a verification link to:</p>
+          <p class="verification-email">{{ pendingEmail() }}</p>
+        </div>
+
+        <div class="verification-info">
+          <p>Please click the link in the email to verify your account and complete registration.</p>
+          <p class="small-text">Didn't receive the email? Check your spam folder or click below to resend.</p>
+        </div>
+
+        <div *ngIf="errorMessage()" class="error-message">
+          {{ errorMessage() }}
+        </div>
+
+        <div *ngIf="successMessage()" class="success-message">
+          {{ successMessage() }}
+        </div>
+
+        <button type="button" (click)="resendVerificationEmail()" [disabled]="isLoading()" class="submit-btn secondary"
+          [class.loading]="isLoading()">
+          <span *ngIf="!isLoading()">Resend Verification Email</span>
+          <span *ngIf="isLoading()" class="loader"></span>
+        </button>
+
+        <div class="toggle-text">
+          <p>
+            <a href="javascript:void(0)" (click)="backToLogin()">
+              ← Back to Sign In
+            </a>
+          </p>
+        </div>
+      </div>
+
       <!-- Login/Register Form -->
-      <div *ngIf="!showForgotPassword()">
+      <div *ngIf="!showForgotPassword() && !showVerificationPending()">
         <div class="form-header">
           <h2>{{ isLogin() ? 'Welcome Back' : 'Create Account' }}</h2>
           <p>{{ isLogin() ? 'Please sign in to continue' : 'Get started with your free account' }}</p>
@@ -40,8 +77,9 @@
             <div class="input-wrapper">
               <i class="fas fa-lock input-icon"></i>
               <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="••••••••"
-                autocomplete="current-password" required>
+                [autocomplete]="isLogin() ? 'current-password' : 'new-password'" required minlength="6">
             </div>
+            <p *ngIf="!isLogin()" class="field-hint">Password must be at least 6 characters</p>
           </div>
 
           <div *ngIf="errorMessage()" class="error-message">
@@ -53,7 +91,8 @@
           </div>
 
           <div class="form-actions">
-            <a href="javascript:void(0)" class="forgot-pass" *ngIf="isLogin()" (click)="showForgotPassword.set(true)">Forgot Password?</a>
+            <a href="javascript:void(0)" class="forgot-pass" *ngIf="isLogin()"
+              (click)="showForgotPassword.set(true)">Forgot Password?</a>
           </div>
 
           <button type="submit" [disabled]="isLoading()" class="submit-btn" [class.loading]="isLoading()">
@@ -73,7 +112,7 @@
       </div>
 
       <!-- Forgot Password Form -->
-      <div *ngIf="showForgotPassword()">
+      <div *ngIf="showForgotPassword() && !showVerificationPending()">
         <div class="form-header">
           <h2>Reset Password</h2>
           <p>Enter your email to receive password reset instructions</p>
@@ -84,7 +123,7 @@
             <label for="forgot-email">Email Address</label>
             <div class="input-wrapper">
               <i class="fas fa-envelope input-icon"></i>
-              <input type="email" id="forgot-email" [(ngModel)]="forgotEmail" name="forgot-email" 
+              <input type="email" id="forgot-email" [(ngModel)]="forgotEmail" name="forgot-email"
                 placeholder="name@company.com" autocomplete="email" required>
             </div>
             <div *ngIf="emailError()" class="field-error">
@@ -107,7 +146,7 @@
 
           <div class="toggle-text">
             <p>
-              Remember your password? 
+              Remember your password?
               <a href="javascript:void(0)" (click)="cancelForgotPassword()">
                 Back to Sign In
               </a>
