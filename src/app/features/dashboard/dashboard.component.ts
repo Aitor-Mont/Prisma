@@ -3,8 +3,11 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 import { RealTimeChartComponent } from '../../components/real-time-chart/real-time-chart.component';
+import { StockTickerComponent } from '../../shared/components/stock-ticker/stock-ticker.component';
+import { MarketOverviewComponent } from '../../shared/components/market-overview/market-overview.component';
 import { MockDataService } from '../../core/services/mock-data.service';
 import { FinancialDataService } from '../../core/services/financial-data.service';
+import { StockDataService } from '../../core/services/stock-data.service';
 import { Transaction, CryptoData, GlobalActivityData } from '../../core/models/financial.models';
 import { Chart, registerables } from 'chart.js';
 
@@ -13,7 +16,15 @@ Chart.register(...registerables);
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, HeaderComponent, MetricCardComponent, DecimalPipe, RealTimeChartComponent],
+    imports: [
+        CommonModule,
+        HeaderComponent,
+        MetricCardComponent,
+        DecimalPipe,
+        RealTimeChartComponent,
+        StockTickerComponent,
+        MarketOverviewComponent
+    ],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })

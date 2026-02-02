@@ -317,6 +317,75 @@
   }
 }
 
+/* Verification Pending State */
+.verification-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.verification-email {
+  font-weight: 600;
+  color: #00d2ff;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.verification-info {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.verification-info p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.verification-info .small-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Secondary Button */
+.submit-btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(0, 210, 255, 0.5);
+  color: #00d2ff;
+}
+
+.submit-btn.secondary:hover:not(:disabled) {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: #00d2ff;
+}
+
+/* Field Hints */
+.field-hint {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.3rem;
+  margin-bottom: 0;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: #ff6b6b;
+  margin-top: 0.3rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .auth-card {
